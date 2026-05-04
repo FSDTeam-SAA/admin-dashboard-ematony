@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { Camera, Eye, EyeOff, Loader2, Pencil, Save } from "lucide-react";
 import { toast } from "sonner";
@@ -9,23 +9,38 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { changePasswordApi, updateProfileApi } from "@/lib/api";
+import { changePasswordApi, getProfileApi, updateProfileApi } from "@/lib/api";
 import { getInitials } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 
 type SettingsTab = "profile" | "password";
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [editingProfile, setEditingProfile] = useState(false);
 
-  const [yourName, setYourName] = useState("Demo");
-  const [email, setEmail] = useState(session?.user?.email ?? "example@example.com");
-  const [phone, setPhone] = useState("(307) 555-0133");
-  const [bio, setBio] = useState(
-    ""
-  );
+  const [yourName, setYourName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [bio, setBio] = useState("");
+
+  const { data: profileResponse } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfileApi().then((res) => res.data?.data),
+    enabled: Boolean(session),
+  });
+
+  useEffect(() => {
+    if (!profileResponse) return;
+    setYourName(profileResponse.name ?? "");
+    setEmail(profileResponse.email ?? "");
+    const phoneValue = (profileResponse as { phone?: string }).phone;
+    if (phoneValue) setPhone(phoneValue);
+    const bioValue = (profileResponse as { bio?: string }).bio;
+    if (bioValue) setBio(bioValue);
+    if (profileResponse.avatar?.url) setAvatarUrl(profileResponse.avatar.url);
+  }, [profileResponse]);
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -46,9 +61,12 @@ export default function SettingsPage() {
       formData.append("avatar", file);
       return updateProfileApi(formData);
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       const url = response.data?.data?.avatar?.url;
-      if (url) setAvatarUrl(url);
+      if (url) {
+        setAvatarUrl(url);
+        await updateSession({ image: url });
+      }
       toast.success("Avatar updated");
     },
     onError: (error: unknown) => {
@@ -91,11 +109,39 @@ export default function SettingsPage() {
     },
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: () => {
+      const formData = new FormData();
+      formData.append("name", yourName);
+      return updateProfileApi(formData);
+    },
+    onSuccess: async (response) => {
+      const updated = response.data?.data;
+      if (updated?.avatar?.url) setAvatarUrl(updated.avatar.url);
+      if (updated?.name) setYourName(updated.name);
+      await updateSession({
+        name: updated?.name,
+        image: updated?.avatar?.url,
+      });
+      toast.success("Profile updated successfully");
+      setEditingProfile(false);
+    },
+    onError: (error: unknown) => {
+      const response = error as { response?: { data?: { message?: string } } };
+      toast.error(response.response?.data?.message ?? "Failed to update profile");
+    },
+  });
+
   const handleProfileToggle = () => {
     if (editingProfile) {
-      toast.success("Profile details updated locally.");
+      if (!yourName.trim()) {
+        toast.error("Name is required.");
+        return;
+      }
+      updateProfileMutation.mutate();
+      return;
     }
-    setEditingProfile((value) => !value);
+    setEditingProfile(true);
   };
 
   const handlePasswordSubmit = (event: React.FormEvent) => {
