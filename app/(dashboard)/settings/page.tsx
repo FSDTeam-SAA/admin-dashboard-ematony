@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { Pencil, Save } from "lucide-react";
+import { Camera, Eye, EyeOff, Loader2, Pencil, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { changePasswordApi } from "@/lib/api";
+import { changePasswordApi, updateProfileApi } from "@/lib/api";
 import { getInitials } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 
@@ -20,40 +20,58 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [editingProfile, setEditingProfile] = useState(false);
 
-<<<<<<< HEAD
   const [yourName, setYourName] = useState("Demo");
   const [email, setEmail] = useState(session?.user?.email ?? "example@example.com");
   const [phone, setPhone] = useState("(307) 555-0133");
   const [bio, setBio] = useState(
     ""
-=======
-  const [firstName, setFirstName] = useState("Demo");
-  const [lastName, setLastName] = useState("Name");
-  const [email, setEmail] = useState(session?.user?.email ?? "example@example.com");
-  const [phone, setPhone] = useState("(307) 555-0133");
-  const [bio, setBio] = useState(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
->>>>>>> 07427f3202e9a7a9603db96026b3b11ee8d60e77
   );
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const displayName = session?.user?.name ?? "Ematony";
   const displayHandle = "@admin";
-  const avatarUrl = (session?.user as { image?: string } | undefined)?.image ?? "";
+  const sessionAvatarUrl = (session?.user as { image?: string } | undefined)?.image ?? "";
+  const [avatarUrl, setAvatarUrl] = useState<string>(sessionAvatarUrl);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadAvatarMutation = useMutation({
+    mutationFn: (file: File) => {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      return updateProfileApi(formData);
+    },
+    onSuccess: (response) => {
+      const url = response.data?.data?.avatar?.url;
+      if (url) setAvatarUrl(url);
+      toast.success("Avatar updated");
+    },
+    onError: (error: unknown) => {
+      const response = error as { response?: { data?: { message?: string } } };
+      toast.error(response.response?.data?.message ?? "Failed to upload avatar");
+    },
+  });
+
+  const handleAvatarFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file.");
+      return;
+    }
+    uploadAvatarMutation.mutate(file);
+  };
 
   const profileCardName = useMemo(() => {
-<<<<<<< HEAD
     const joined = `${yourName}`.trim();
     return joined || displayName;
   }, [displayName, yourName]);
-=======
-    const joined = `${firstName} ${lastName}`.trim();
-    return joined || displayName;
-  }, [displayName, firstName, lastName]);
->>>>>>> 07427f3202e9a7a9603db96026b3b11ee8d60e77
 
   const changePasswordMutation = useMutation({
     mutationFn: () =>
@@ -133,12 +151,47 @@ export default function SettingsPage() {
 
           <div className="mb-10 flex items-center justify-between rounded-[18px] border border-[#dfe7ef] bg-white px-5 py-6 shadow-[0_2px_6px_rgba(0,0,0,0.02)] sm:px-7">
             <div className="flex min-w-0 items-center gap-4">
-              <Avatar className="h-[96px] w-[96px] border border-[#dfe7ef]">
-                <AvatarImage src={avatarUrl} alt={profileCardName} />
-                <AvatarFallback className="bg-[#064b39] text-[28px] text-white">
-                  {getInitials(profileCardName)}
-                </AvatarFallback>
-              </Avatar>
+              <div
+                className="group relative h-[96px] w-[96px] cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
+                aria-label="Change profile picture"
+              >
+                <Avatar className="h-[96px] w-[96px] border border-[#dfe7ef]">
+                  <AvatarImage src={avatarUrl} alt={profileCardName} />
+                  <AvatarFallback className="bg-[#064b39] text-[28px] text-white">
+                    {getInitials(profileCardName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div
+                  className={cn(
+                    "pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-black/50 transition-opacity",
+                    uploadAvatarMutation.isPending
+                      ? "opacity-100"
+                      : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                  )}
+                >
+                  {uploadAvatarMutation.isPending ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                  ) : (
+                    <Camera className="h-6 w-6 text-white" />
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarFileChange}
+                />
+              </div>
               <div className="min-w-0">
                 <div className="truncate text-[24px] font-semibold leading-[1.1] text-[#083f32]">
                   {displayName}
@@ -178,31 +231,11 @@ export default function SettingsPage() {
               <div className="grid gap-5 lg:grid-cols-2">
                 <div>
                   <label className="mb-3 block text-[16px] font-normal leading-[1.1] text-[#083f32]">
-<<<<<<< HEAD
                     Your Name
                   </label>
                   <Input
                     value={yourName}
                     onChange={(event) => setYourName(event.target.value)}
-=======
-                    First Name
-                  </label>
-                  <Input
-                    value={firstName}
-                    onChange={(event) => setFirstName(event.target.value)}
-                    readOnly={!editingProfile}
-                    className={fieldClass}
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-3 block text-[16px] font-normal leading-[1.1] text-[#083f32]">
-                    Last Name
-                  </label>
-                  <Input
-                    value={lastName}
-                    onChange={(event) => setLastName(event.target.value)}
->>>>>>> 07427f3202e9a7a9603db96026b3b11ee8d60e77
                     readOnly={!editingProfile}
                     className={fieldClass}
                   />
@@ -266,42 +299,72 @@ export default function SettingsPage() {
                     <label className="mb-3 block text-[16px] font-normal leading-[1.1] text-[#083f32]">
                       Current Password
                     </label>
-                    <Input
-                      type="password"
-                      value={oldPassword}
-                      onChange={(event) => setOldPassword(event.target.value)}
-                      className={fieldClass}
-                      placeholder=".............."
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showOldPassword ? "text" : "password"}
+                        value={oldPassword}
+                        onChange={(event) => setOldPassword(event.target.value)}
+                        className={cn(fieldClass, "pr-12")}
+                        placeholder=".............."
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOldPassword((v) => !v)}
+                        aria-label={showOldPassword ? "Hide password" : "Show password"}
+                        className="absolute inset-y-0 right-3 flex items-center text-[#7c8da8] hover:text-[#083f32]"
+                      >
+                        {showOldPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
                   </div>
 
                   <div>
                     <label className="mb-3 block text-[16px] font-normal leading-[1.1] text-[#083f32]">
                       New Password
                     </label>
-                    <Input
-                      type="password"
-                      value={newPassword}
-                      onChange={(event) => setNewPassword(event.target.value)}
-                      className={fieldClass}
-                      placeholder=".............."
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(event) => setNewPassword(event.target.value)}
+                        className={cn(fieldClass, "pr-12")}
+                        placeholder=".............."
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword((v) => !v)}
+                        aria-label={showNewPassword ? "Hide password" : "Show password"}
+                        className="absolute inset-y-0 right-3 flex items-center text-[#7c8da8] hover:text-[#083f32]"
+                      >
+                        {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
                   </div>
 
                   <div>
                     <label className="mb-3 block text-[16px] font-normal leading-[1.1] text-[#083f32]">
                       Confirm New Password
                     </label>
-                    <Input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(event) => setConfirmPassword(event.target.value)}
-                      className={fieldClass}
-                      placeholder=".............."
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(event) => setConfirmPassword(event.target.value)}
+                        className={cn(fieldClass, "pr-12")}
+                        placeholder=".............."
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((v) => !v)}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        className="absolute inset-y-0 right-3 flex items-center text-[#7c8da8] hover:text-[#083f32]"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
 

@@ -25,6 +25,15 @@ export const resetPasswordApi = (data: ResetPasswordPayload) =>
 export const changePasswordApi = (data: ChangePasswordPayload) =>
   axiosInstance.post("/auth/change-password", data);
 
+// User profile
+export const getProfileApi = () =>
+  axiosInstance.get<ApiResponse<User>>("/user/profile");
+
+export const updateProfileApi = (formData: FormData) =>
+  axiosInstance.put<ApiResponse<User>>("/user/profile", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
 // Dashboard
 export const getDashboardStatsApi = () =>
   axiosInstance.get<ApiResponse<DashboardStats>>("/admin/dashboard/stats");

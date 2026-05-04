@@ -29,11 +29,8 @@ export default function LoginPage() {
         redirect: false,
       });
 
-<<<<<<< HEAD
       console.log("fffffffffffffff",result)
 
-=======
->>>>>>> 07427f3202e9a7a9603db96026b3b11ee8d60e77
       if (result?.error) {
         toast.error("Invalid admin email or password");
       } else {
