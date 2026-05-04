@@ -20,11 +20,20 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [editingProfile, setEditingProfile] = useState(false);
 
+<<<<<<< HEAD
   const [yourName, setYourName] = useState("Demo");
   const [email, setEmail] = useState(session?.user?.email ?? "example@example.com");
   const [phone, setPhone] = useState("(307) 555-0133");
   const [bio, setBio] = useState(
     ""
+=======
+  const [firstName, setFirstName] = useState("Demo");
+  const [lastName, setLastName] = useState("Name");
+  const [email, setEmail] = useState(session?.user?.email ?? "example@example.com");
+  const [phone, setPhone] = useState("(307) 555-0133");
+  const [bio, setBio] = useState(
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+>>>>>>> 07427f3202e9a7a9603db96026b3b11ee8d60e77
   );
 
   const [oldPassword, setOldPassword] = useState("");
@@ -36,9 +45,15 @@ export default function SettingsPage() {
   const avatarUrl = (session?.user as { image?: string } | undefined)?.image ?? "";
 
   const profileCardName = useMemo(() => {
+<<<<<<< HEAD
     const joined = `${yourName}`.trim();
     return joined || displayName;
   }, [displayName, yourName]);
+=======
+    const joined = `${firstName} ${lastName}`.trim();
+    return joined || displayName;
+  }, [displayName, firstName, lastName]);
+>>>>>>> 07427f3202e9a7a9603db96026b3b11ee8d60e77
 
   const changePasswordMutation = useMutation({
     mutationFn: () =>
@@ -163,11 +178,31 @@ export default function SettingsPage() {
               <div className="grid gap-5 lg:grid-cols-2">
                 <div>
                   <label className="mb-3 block text-[16px] font-normal leading-[1.1] text-[#083f32]">
+<<<<<<< HEAD
                     Your Name
                   </label>
                   <Input
                     value={yourName}
                     onChange={(event) => setYourName(event.target.value)}
+=======
+                    First Name
+                  </label>
+                  <Input
+                    value={firstName}
+                    onChange={(event) => setFirstName(event.target.value)}
+                    readOnly={!editingProfile}
+                    className={fieldClass}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-3 block text-[16px] font-normal leading-[1.1] text-[#083f32]">
+                    Last Name
+                  </label>
+                  <Input
+                    value={lastName}
+                    onChange={(event) => setLastName(event.target.value)}
+>>>>>>> 07427f3202e9a7a9603db96026b3b11ee8d60e77
                     readOnly={!editingProfile}
                     className={fieldClass}
                   />
