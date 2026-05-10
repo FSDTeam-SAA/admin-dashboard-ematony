@@ -204,7 +204,7 @@ export default function GroupsPage() {
         }}
       >
         <DialogContent
-          className="w-[min(92vw,1100px)] max-w-[1100px] rounded-[32px] border-0 bg-white px-10 py-8 text-[#083f32] shadow-[0_18px_60px_rgba(0,0,0,0.18)] ring-0"
+          className="w-[min(92vw,520px)] max-w-[520px] rounded-[28px] border-0 bg-white px-7 py-7 text-[#083f32] shadow-[0_18px_60px_rgba(0,0,0,0.18)] ring-0"
         >
           {detailsLoading || !detail ? (
             <TableSkeleton rows={6} cols={3} />
@@ -248,7 +248,7 @@ export default function GroupsPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab("members")}
-                  className={`h-[54px] min-w-[248px] rounded-[18px] border text-[16px] font-medium ${
+                  className={`h-[50px] flex-1 rounded-[14px] border text-[15px] font-medium ${
                     activeTab === "members"
                       ? "border-[#1d8569] bg-[#1d8569] text-white"
                       : "border-[#8f979e] bg-white text-[#4b5563]"
@@ -259,7 +259,7 @@ export default function GroupsPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab("transactions")}
-                  className={`h-[54px] min-w-[248px] rounded-[18px] border text-[16px] font-medium ${
+                  className={`h-[50px] flex-1 rounded-[14px] border text-[15px] font-medium ${
                     activeTab === "transactions"
                       ? "border-[#1d8569] bg-[#1d8569] text-white"
                       : "border-[#8f979e] bg-white text-[#4b5563]"
