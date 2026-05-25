@@ -14,11 +14,20 @@ import { useDebounce } from "@/hooks/use-debounce";
 import type { Payment } from "@/types";
 
 function getTypePill(payment: Payment) {
-  if (payment.type.includes("topup") || payment.type.includes("contribution")) {
-    return { label: "Topup", className: "bg-[#e8f7f1] text-[#083f32]" };
+  if (payment.type.includes("topup")) {
+    return { label: "Top Up", className: "bg-[#e8f7f1] text-[#083f32]" };
+  }
+  if (payment.type === "group_contribution") {
+    return { label: "Contribution", className: "bg-[#e8f7f1] text-[#083f32]" };
+  }
+  if (payment.type === "admin_commission") {
+    return { label: "Admin Commission", className: "bg-[#fff4d6] text-[#9a6700]" };
+  }
+  if (payment.type === "late_fee_admin_credit") {
+    return { label: "Late Fee Credit", className: "bg-[#fff4d6] text-[#9a6700]" };
   }
 
-  return { label: "Withdraw", className: "bg-[#fdeaea] text-[#ef4444]" };
+  return { label: "Payout / Withdraw", className: "bg-[#fdeaea] text-[#ef4444]" };
 }
 
 export default function PaymentsPage() {
@@ -90,6 +99,7 @@ export default function PaymentsPage() {
                     <th className="pb-1">Date</th>
                     <th className="pb-1">Amount</th>
                     <th className="pb-1">Type</th>
+                    <th className="pb-1">Notes</th>
                     <th className="pb-1 text-right">Action</th>
                   </tr>
                 </thead>
@@ -119,13 +129,18 @@ export default function PaymentsPage() {
                             </div>
                           </td>
                           <td>{new Date(payment.createdAt).toLocaleDateString("en-GB")}</td>
-                          <td>{formatCurrency(payment.price)}</td>
+                          <td>{formatCurrency(payment.price, payment.currencyCode ?? "USD")}</td>
                           <td>
                             <span
                               className={`inline-flex min-w-[132px] items-center justify-center rounded-full px-5 py-2 text-[16px] font-medium ${tone.className}`}
                             >
                               {tone.label}
                             </span>
+                          </td>
+                          <td>
+                            {payment.lateFeeApplied
+                              ? `${formatCurrency(payment.lateFeeAmount ?? 0, payment.currencyCode ?? "USD")} late fee`
+                              : payment.notes || "-"}
                           </td>
                           <td className="text-right">
                             <button
@@ -141,7 +156,7 @@ export default function PaymentsPage() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={5} className="py-16 text-center text-[16px] text-[#7b8192]">
+                      <td colSpan={6} className="py-16 text-center text-[16px] text-[#7b8192]">
                         No transactions found.
                       </td>
                     </tr>

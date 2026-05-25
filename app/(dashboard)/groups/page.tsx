@@ -24,6 +24,12 @@ function getStatusStyle(status: string) {
   return { label: "Paused", className: "bg-[#fdf4e8] text-[#f59e0b]" };
 }
 
+function formatFrequency(value: string) {
+  if (value === "biweekly") return "Bi-Weekly";
+  if (!value) return "-";
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 export default function GroupsPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -111,14 +117,15 @@ export default function GroupsPage() {
                     <th className="pb-1">Group Name</th>
                     <th className="pb-1">Group Code</th>
                     <th className="pb-1">Member Count</th>
-                    <th className="pb-1">Cycle</th>
+                    <th className="pb-1">Currency</th>
+                    <th className="pb-1">Frequency</th>
                     <th className="pb-1">Group Status</th>
                     <th className="pb-1 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.length ? (
-                    rows.map((group, index) => {
+                    rows.map((group) => {
                       const tone = getStatusStyle(group.status);
                       return (
                         <tr key={group._id} className="text-[16px] font-normal leading-[1.1] text-[#083f32]">
@@ -134,7 +141,8 @@ export default function GroupsPage() {
                           </td>
                           <td>#{group.inviteCode || "112233"}</td>
                           <td>{group.maxMembers}</td>
-                          <td>{`${String((index % 4) + 3).padStart(2, "0")}/12 Months`}</td>
+                          <td>{group.currencyCode}</td>
+                          <td>{formatFrequency(group.contributionFrequency)}</td>
                           <td>
                             <span
                               className={`inline-flex min-w-[132px] items-center justify-center rounded-full px-5 py-2 text-[16px] font-medium ${tone.className}`}
@@ -174,7 +182,7 @@ export default function GroupsPage() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={6} className="py-16 text-center text-[16px] text-[#7b8192]">
+                      <td colSpan={7} className="py-16 text-center text-[16px] text-[#7b8192]">
                         No groups found.
                       </td>
                     </tr>
@@ -204,7 +212,7 @@ export default function GroupsPage() {
         }}
       >
         <DialogContent
-          className="w-[min(92vw,520px)] max-w-[520px] rounded-[28px] border-0 bg-white px-7 py-7 text-[#083f32] shadow-[0_18px_60px_rgba(0,0,0,0.18)] ring-0"
+          className="w-[min(92vw,520px)] min-w-[720px] rounded-[28px] border-0 bg-white px-7 py-7 text-[#083f32] shadow-[0_18px_60px_rgba(0,0,0,0.18)] ring-0"
         >
           {detailsLoading || !detail ? (
             <TableSkeleton rows={6} cols={3} />
@@ -226,7 +234,13 @@ export default function GroupsPage() {
                   </div>
                   <div>
                     <div className="text-[20px] font-semibold">Cycle Duration</div>
-                    <div className="mt-2 text-[16px]">12 Months</div>
+                    <div className="mt-2 text-[16px]">
+                      {detail.group.contributionFrequency === "weekly"
+                        ? `${detail.group.maxMembers} weeks`
+                        : detail.group.contributionFrequency === "biweekly"
+                          ? `${detail.group.maxMembers * 2} weeks`
+                          : `${detail.group.maxMembers} months`}
+                    </div>
                   </div>
                 </div>
 
@@ -234,12 +248,36 @@ export default function GroupsPage() {
                   <div>
                     <div className="text-[20px] font-semibold">Frequency</div>
                     <div className="mt-2 text-[16px] capitalize">
-                      {detail.group.contributionFrequency}
+                      {formatFrequency(detail.group.contributionFrequency)}
                     </div>
                   </div>
                   <div>
                     <div className="text-[20px] font-semibold">Members</div>
                     <div className="mt-2 text-[16px]">{detail.summary.membersCount}</div>
+                  </div>
+                  <div>
+                    <div className="text-[20px] font-semibold">Auto Payments</div>
+                    <div className="mt-2 text-[16px]">
+                      {detail.group.autoPaymentsEnabled ? "Enabled" : "Disabled"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[20px] font-semibold">Late Fee Policy</div>
+                    <div className="mt-2 text-[16px]">
+                      {detail.group.gracePeriodHours ?? 24}h grace, {detail.group.lateFeePercent ?? 7.5}% admin fee
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[20px] font-semibold">Admin Payout</div>
+                    <div className="mt-2 text-[16px]">
+                      {detail.group.adminPayoutPercent ?? 1}% of payout pool
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[20px] font-semibold">Wheel Mode</div>
+                    <div className="mt-2 text-[16px] capitalize">
+                      {detail.group.wheelMode ?? "serial"}
+                    </div>
                   </div>
                 </div>
               </div>

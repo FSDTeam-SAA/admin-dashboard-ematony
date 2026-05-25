@@ -59,7 +59,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 px-0 pb-8 lg:px-0">
-      <section className="grid gap-5 px-4 pt-6 sm:px-6 lg:grid-cols-3 lg:px-6">
+      <section className="grid gap-5 px-4 pt-6 sm:px-6 lg:grid-cols-3 xl:grid-cols-5 lg:px-6">
         {statsLoading ? (
           <StatsCardSkeleton />
         ) : (
@@ -102,6 +102,34 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-[16px] font-semibold leading-[1.1] text-[#22c55e]">
                   + 36% ↑
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[14px] border border-[#e2e8f0] bg-white px-8 py-7 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <div className="text-[16px] font-normal leading-[1.1] text-[#083f32]">
+                Extra 7.5% Charge
+              </div>
+              <div className="mt-6 flex items-end justify-between gap-4">
+                <div className="text-[28px] font-semibold leading-[1.1] text-[#083f32]">
+                  {formatCompact(statsData?.lateFeeRevenue ?? 0)}
+                </div>
+                <div className="text-[14px] font-medium leading-[1.2] text-[#9a6700]">
+                  Admin late fee income, mixed currencies
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[14px] border border-[#e2e8f0] bg-white px-8 py-7 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <div className="text-[16px] font-normal leading-[1.1] text-[#083f32]">
+                Admin Commission
+              </div>
+              <div className="mt-6 flex items-end justify-between gap-4">
+                <div className="text-[28px] font-semibold leading-[1.1] text-[#083f32]">
+                  {formatCompact(statsData?.adminCommissionRevenue ?? 0)}
+                </div>
+                <div className="text-[14px] font-medium leading-[1.2] text-[#22c55e]">
+                  Group payout commission, mixed currencies
                 </div>
               </div>
             </div>

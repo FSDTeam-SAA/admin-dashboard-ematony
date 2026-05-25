@@ -36,6 +36,8 @@ export interface DashboardStats {
   totalUsers: number;
   totalPayments: number;
   totalRevenue: number;
+  lateFeeRevenue: number;
+  adminCommissionRevenue: number;
   activeGroups: number;
 }
 
@@ -54,7 +56,9 @@ export type PaymentType =
   | "group_contribution"
   | "payout"
   | "refund"
-  | "adjustment";
+  | "adjustment"
+  | "admin_commission"
+  | "late_fee_admin_credit";
 
 export interface Payment {
   _id: string;
@@ -66,6 +70,16 @@ export interface Payment {
   paymentMethod?: string;
   referenceCode?: string;
   type: PaymentType;
+  currencyCode?: string;
+  baseAmount?: number;
+  lateFeeApplied?: boolean;
+  lateFeeAmount?: number;
+  adminCreditAmount?: number;
+  winnerPayoutAmount?: number;
+  dueDate?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -83,6 +97,14 @@ export interface SavingsGroup {
   currencyCode: string;
   contributionFrequency: "weekly" | "biweekly" | "monthly";
   maxMembers: number;
+  autoPaymentsEnabled?: boolean;
+  reminderDaysBefore?: number;
+  gracePeriodHours?: number;
+  lateFeePercent?: number;
+  adminPayoutPercent?: number;
+  nigeriaAdminPayoutPercent?: number;
+  wheelMode?: "serial" | "spin";
+  wheelSeededAt?: string | null;
   startDate?: string | null;
   endDate?: string | null;
   createdAt: string;
