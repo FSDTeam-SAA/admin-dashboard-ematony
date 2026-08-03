@@ -155,6 +155,25 @@ export interface SupportTicket {
   updatedAt: string;
 }
 
+export interface Faq {
+  _id: string;
+  question: string;
+  answer: string;
+  category: string;
+  sortOrder: number;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FaqPayload {
+  question: string;
+  answer: string;
+  category?: string;
+  sortOrder?: number;
+  isPublished?: boolean;
+}
+
 export interface ForgotPasswordPayload {
   email: string;
 }

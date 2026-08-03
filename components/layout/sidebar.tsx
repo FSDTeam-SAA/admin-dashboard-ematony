@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   CircleEllipsis,
+  CircleHelp,
   Grid2x2,
   LogOut,
   Settings,
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/users", label: "User Management", icon: UserRound },
   { href: "/groups", label: "Group Management", icon: UsersRound },
   { href: "/issues", label: "Issue Management", icon: CircleEllipsis },
+  { href: "/faqs", label: "FAQ Management", icon: CircleHelp },
   { href: "/payments", label: "Transaction Management", icon: SquareArrowOutUpRight },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

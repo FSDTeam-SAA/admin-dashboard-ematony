@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { Camera, Eye, EyeOff, Loader2, Pencil, Save } from "lucide-react";
@@ -31,17 +31,6 @@ export default function SettingsPage() {
     enabled: Boolean(session),
   });
 
-  useEffect(() => {
-    if (!profileResponse) return;
-    setYourName(profileResponse.name ?? "");
-    setEmail(profileResponse.email ?? "");
-    const phoneValue = (profileResponse as { phone?: string }).phone;
-    if (phoneValue) setPhone(phoneValue);
-    const bioValue = (profileResponse as { bio?: string }).bio;
-    if (bioValue) setBio(bioValue);
-    if (profileResponse.avatar?.url) setAvatarUrl(profileResponse.avatar.url);
-  }, [profileResponse]);
-
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -54,6 +43,13 @@ export default function SettingsPage() {
   const sessionAvatarUrl = (session?.user as { image?: string } | undefined)?.image ?? "";
   const [avatarUrl, setAvatarUrl] = useState<string>(sessionAvatarUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const profilePhone = (profileResponse as { phone?: string } | undefined)?.phone ?? "";
+  const profileBio = (profileResponse as { bio?: string } | undefined)?.bio ?? "";
+  const currentName = editingProfile ? yourName : profileResponse?.name ?? yourName;
+  const currentEmail = editingProfile ? email : profileResponse?.email ?? email;
+  const currentPhone = editingProfile ? phone : profilePhone || phone;
+  const currentBio = editingProfile ? bio : profileBio || bio;
+  const currentAvatarUrl = avatarUrl || profileResponse?.avatar?.url || sessionAvatarUrl;
 
   const uploadAvatarMutation = useMutation({
     mutationFn: (file: File) => {
@@ -87,9 +83,9 @@ export default function SettingsPage() {
   };
 
   const profileCardName = useMemo(() => {
-    const joined = `${yourName}`.trim();
+    const joined = `${currentName}`.trim();
     return joined || displayName;
-  }, [displayName, yourName]);
+  }, [currentName, displayName]);
 
   const changePasswordMutation = useMutation({
     mutationFn: () =>
@@ -141,6 +137,10 @@ export default function SettingsPage() {
       updateProfileMutation.mutate();
       return;
     }
+    setYourName(profileResponse?.name ?? "");
+    setEmail(profileResponse?.email ?? "");
+    setPhone(profilePhone);
+    setBio(profileBio);
     setEditingProfile(true);
   };
 
@@ -211,7 +211,7 @@ export default function SettingsPage() {
                 aria-label="Change profile picture"
               >
                 <Avatar className="h-[96px] w-[96px] border border-[#dfe7ef]">
-                  <AvatarImage src={avatarUrl} alt={profileCardName} />
+                  <AvatarImage src={currentAvatarUrl} alt={profileCardName} />
                   <AvatarFallback className="bg-[#064b39] text-[28px] text-white">
                     {getInitials(profileCardName)}
                   </AvatarFallback>
@@ -280,7 +280,7 @@ export default function SettingsPage() {
                     Your Name
                   </label>
                   <Input
-                    value={yourName}
+                    value={currentName}
                     onChange={(event) => setYourName(event.target.value)}
                     readOnly={!editingProfile}
                     className={fieldClass}
@@ -292,7 +292,7 @@ export default function SettingsPage() {
                     Email Address
                   </label>
                   <Input
-                    value={email}
+                    value={currentEmail}
                     onChange={(event) => setEmail(event.target.value)}
                     readOnly={!editingProfile}
                     className={fieldClass}
@@ -304,7 +304,7 @@ export default function SettingsPage() {
                     Phone
                   </label>
                   <Input
-                    value={phone}
+                    value={currentPhone}
                     onChange={(event) => setPhone(event.target.value)}
                     readOnly={!editingProfile}
                     className={fieldClass}
@@ -317,7 +317,7 @@ export default function SettingsPage() {
                   Bio
                 </label>
                 <Textarea
-                  value={bio}
+                  value={currentBio}
                   onChange={(event) => setBio(event.target.value)}
                   readOnly={!editingProfile}
                   className="min-h-[146px] rounded-[18px] border-[#dfe7ef] bg-white px-4 py-4 text-[16px] font-normal leading-[1.25] text-[#083f32] placeholder:text-[#7c8da8]"

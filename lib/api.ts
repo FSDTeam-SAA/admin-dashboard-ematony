@@ -3,6 +3,8 @@ import type {
   ApiResponse,
   ChangePasswordPayload,
   DashboardStats,
+  Faq,
+  FaqPayload,
   ForgotPasswordPayload,
   GroupDetailsResponse,
   PaginatedResponse,
@@ -120,3 +122,21 @@ export const updateIssueStatusApi = (
     `/admin/issues/${id}/status`,
     payload
   );
+
+// FAQs
+export const getFaqsApi = (page = 1, limit = 10, search = "") =>
+  axiosInstance.get<PaginatedResponse<Faq>>("/admin/faqs", {
+    params: {
+      ...withPagination(page, limit),
+      ...(search ? { search } : {}),
+    },
+  });
+
+export const createFaqApi = (payload: FaqPayload) =>
+  axiosInstance.post<ApiResponse<Faq>>("/admin/faqs", payload);
+
+export const updateFaqApi = (id: string, payload: FaqPayload) =>
+  axiosInstance.put<ApiResponse<Faq>>(`/admin/faqs/${id}`, payload);
+
+export const deleteFaqApi = (id: string) =>
+  axiosInstance.delete<ApiResponse<Faq>>(`/admin/faqs/${id}`);
