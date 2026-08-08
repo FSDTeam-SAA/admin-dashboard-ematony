@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, Search, Trash2 } from "lucide-react";
+import { CheckCircle2, Eye, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Pagination } from "@/components/shared/pagination";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
@@ -18,8 +18,13 @@ function getIssueStatus(status: string) {
   if (status === "resolved") {
     return { label: "Resolved", className: "bg-[#e8f7f1] text-[#083f32]" };
   }
-
-  return { label: "Pending", className: "bg-[#fdf4e8] text-[#f59e0b]" };
+  if (status === "closed") {
+    return { label: "Closed", className: "bg-[#eef3f6] text-[#6b7280]" };
+  }
+  if (status === "in_progress") {
+    return { label: "In progress", className: "bg-[#eaf2ff] text-[#2563eb]" };
+  }
+  return { label: "Open", className: "bg-[#fdf4e8] text-[#b86c00]" };
 }
 
 function getGroupName(group?: string | SavingsGroup | null) {
@@ -32,13 +37,19 @@ export default function IssuesPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [selectedIssue, setSelectedIssue] = useState<SupportTicket | null>(null);
   const debouncedSearch = useDebounce(search, 400);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-issues", page, debouncedSearch],
+    queryKey: ["admin-issues", page, debouncedSearch, statusFilter, categoryFilter],
     queryFn: () =>
-      getIssuesApi(page, 10, { search: debouncedSearch }).then((response) => response.data),
+      getIssuesApi(page, 10, {
+        search: debouncedSearch,
+        status: statusFilter,
+        category: categoryFilter,
+      }).then((response) => response.data),
   });
 
   const resolveMutation = useMutation({
@@ -71,7 +82,33 @@ export default function IssuesPage() {
             </div>
           </div>
 
-          <div className="relative w-full max-w-[356px]">
+          <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+            <select
+              aria-label="Filter issues by status"
+              value={statusFilter}
+              onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }}
+              className="h-[52px] rounded-[12px] border border-[#b8c7da] bg-white px-4 text-[15px] text-[#083f32] outline-none"
+            >
+              <option value="">All statuses</option>
+              <option value="open">Open</option>
+              <option value="in_progress">In progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </select>
+            <select
+              aria-label="Filter issues by category"
+              value={categoryFilter}
+              onChange={(event) => { setCategoryFilter(event.target.value); setPage(1); }}
+              className="h-[52px] rounded-[12px] border border-[#b8c7da] bg-white px-4 text-[15px] text-[#083f32] outline-none"
+            >
+              <option value="">All categories</option>
+              <option value="payment_transaction">Payment</option>
+              <option value="membership_access">Membership</option>
+              <option value="technical_issue">Technical</option>
+              <option value="feedback_suggestion">Feedback</option>
+              <option value="other">Other</option>
+            </select>
+            <div className="relative w-full sm:w-[300px]">
             <Input
               value={search}
               onChange={(event) => {
@@ -79,7 +116,7 @@ export default function IssuesPage() {
                 setPage(1);
               }}
               className="h-[52px] rounded-[12px] border-[#b8c7da] bg-white pl-5 pr-[64px] text-[16px] text-[#083f32] placeholder:text-[#083f32]"
-              placeholder="Search for User"
+              placeholder="Search issues"
             />
             <button
               type="button"
@@ -87,6 +124,7 @@ export default function IssuesPage() {
             >
               <Search className="h-5 w-5" />
             </button>
+            </div>
           </div>
         </div>
 
@@ -101,6 +139,7 @@ export default function IssuesPage() {
                     <th className="pb-1">Member Name</th>
                     <th className="pb-1">Group Name</th>
                     <th className="pb-1">Issue</th>
+                    <th className="pb-1">Source</th>
                     <th className="pb-1">Status</th>
                     <th className="pb-1 text-right">Action</th>
                   </tr>
@@ -109,7 +148,7 @@ export default function IssuesPage() {
                   {rows.length ? (
                     rows.map((issue) => {
                       const status = getIssueStatus(issue.status);
-                      const name = getUserDisplayName(issue.userId);
+                      const name = issue.requesterName || getUserDisplayName(issue.userId);
                       return (
                         <tr key={issue._id} className="text-[16px] font-normal leading-[1.1] text-[#083f32]">
                           <td className="py-2">
@@ -124,6 +163,7 @@ export default function IssuesPage() {
                           </td>
                           <td>{getGroupName(issue.groupId)}</td>
                           <td>{issue.subject || "Payment Problem..."}</td>
+                          <td className="capitalize">{issue.source?.replaceAll("_", " ") || "Mobile app"}</td>
                           <td>
                             <span
                               className={`inline-flex min-w-[132px] items-center justify-center rounded-full px-5 py-2 text-[16px] font-medium ${status.className}`}
@@ -147,7 +187,7 @@ export default function IssuesPage() {
                                   resolveMutation.mutate(issue._id)
                                 }
                               >
-                                <Trash2 className="h-5 w-5" />
+                                <CheckCircle2 className="h-5 w-5" />
                               </button>
                             </div>
                           </td>
@@ -156,7 +196,7 @@ export default function IssuesPage() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan={5} className="py-16 text-center text-[16px] text-[#7b8192]">
+                      <td colSpan={6} className="py-16 text-center text-[16px] text-[#7b8192]">
                         No issues found.
                       </td>
                     </tr>
@@ -195,7 +235,7 @@ export default function IssuesPage() {
                 <div>
                   <div className="text-[20px] font-semibold">Full Name</div>
                   <div className="mt-3 text-[16px]">
-                    {getUserDisplayName(selectedIssue.userId)}
+                    {selectedIssue.requesterName || getUserDisplayName(selectedIssue.userId)}
                   </div>
                 </div>
                 <div>
@@ -206,6 +246,13 @@ export default function IssuesPage() {
                   <div className="text-[20px] font-semibold">Issue Category</div>
                   <div className="mt-3 text-[16px] capitalize">
                     {selectedIssue.category.replaceAll("_", "/")}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[20px] font-semibold">Contact</div>
+                  <div className="mt-3 text-[16px] leading-6">
+                    {selectedIssue.requesterEmail || (typeof selectedIssue.userId === "object" ? selectedIssue.userId?.email : "-")}
+                    {selectedIssue.requesterPhone ? <div>{selectedIssue.requesterPhone}</div> : null}
                   </div>
                 </div>
               </div>

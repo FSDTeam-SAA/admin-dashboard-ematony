@@ -7,6 +7,7 @@ import {
   CircleEllipsis,
   CircleHelp,
   Grid2x2,
+  Globe2,
   LogOut,
   Settings,
   SquareArrowOutUpRight,
@@ -32,6 +33,7 @@ const navItems = [
   { href: "/groups", label: "Group Management", icon: UsersRound },
   { href: "/issues", label: "Issue Management", icon: CircleEllipsis },
   { href: "/faqs", label: "FAQ Management", icon: CircleHelp },
+  { href: "/website-content", label: "Website Content", icon: Globe2 },
   { href: "/payments", label: "Transaction Management", icon: SquareArrowOutUpRight },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

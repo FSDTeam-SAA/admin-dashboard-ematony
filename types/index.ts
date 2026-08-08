@@ -142,8 +142,12 @@ export type SupportTicketCategory =
 
 export interface SupportTicket {
   _id: string;
-  userId: string | User;
+  userId?: string | User | null;
   groupId?: string | SavingsGroup | null;
+  requesterName?: string;
+  requesterEmail?: string;
+  requesterPhone?: string;
+  source?: "mobile_app" | "website" | "admin";
   category: SupportTicketCategory;
   subject?: string;
   message: string;
@@ -173,6 +177,54 @@ export interface FaqPayload {
   sortOrder?: number;
   isPublished?: boolean;
 }
+
+export interface SitePageSection {
+  title: string;
+  body: string[];
+}
+
+export interface SitePage {
+  _id?: string;
+  slug: "about-ajo-family" | "privacy-policy" | "terms-of-service" | "contact";
+  title: string;
+  intro: string;
+  content?: string;
+  updatedLabel?: string;
+  sections: SitePageSection[];
+  email?: string;
+  phone?: string;
+  address?: string;
+  supportHours?: string;
+  isPublished: boolean;
+  updatedAt?: string;
+}
+
+export type SitePagePayload = Omit<SitePage, "_id" | "slug" | "updatedAt">;
+
+export interface TeamMember {
+  _id: string;
+  name: string;
+  role: string;
+  bio: string;
+  imageUrl?: string;
+  sortOrder: number;
+  isPublished: boolean;
+}
+
+export type TeamMemberPayload = Omit<TeamMember, "_id">;
+
+export interface Testimonial {
+  _id: string;
+  name: string;
+  review: string;
+  rating: number;
+  location?: string;
+  imageUrl?: string;
+  sortOrder: number;
+  isPublished: boolean;
+}
+
+export type TestimonialPayload = Omit<Testimonial, "_id">;
 
 export interface ForgotPasswordPayload {
   email: string;

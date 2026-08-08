@@ -12,6 +12,12 @@ import type {
   ResetPasswordPayload,
   SavingsGroup,
   SupportTicket,
+  SitePage,
+  SitePagePayload,
+  TeamMember,
+  TeamMemberPayload,
+  Testimonial,
+  TestimonialPayload,
   User,
 } from "@/types";
 
@@ -140,3 +146,34 @@ export const updateFaqApi = (id: string, payload: FaqPayload) =>
 
 export const deleteFaqApi = (id: string) =>
   axiosInstance.delete<ApiResponse<Faq>>(`/admin/faqs/${id}`);
+
+// Website content
+export const getSitePageApi = (slug: SitePage["slug"]) =>
+  axiosInstance.get<ApiResponse<SitePage>>(`/admin/content/${slug}`);
+
+export const updateSitePageApi = (slug: SitePage["slug"], payload: SitePagePayload) =>
+  axiosInstance.put<ApiResponse<SitePage>>(`/admin/content/${slug}`, payload);
+
+export const getTeamApi = () =>
+  axiosInstance.get<ApiResponse<TeamMember[]>>("/admin/team");
+
+export const createTeamMemberApi = (payload: TeamMemberPayload) =>
+  axiosInstance.post<ApiResponse<TeamMember>>("/admin/team", payload);
+
+export const updateTeamMemberApi = (id: string, payload: TeamMemberPayload) =>
+  axiosInstance.put<ApiResponse<TeamMember>>(`/admin/team/${id}`, payload);
+
+export const deleteTeamMemberApi = (id: string) =>
+  axiosInstance.delete<ApiResponse<TeamMember>>(`/admin/team/${id}`);
+
+export const getTestimonialsApi = () =>
+  axiosInstance.get<ApiResponse<Testimonial[]>>("/admin/testimonials");
+
+export const createTestimonialApi = (payload: TestimonialPayload) =>
+  axiosInstance.post<ApiResponse<Testimonial>>("/admin/testimonials", payload);
+
+export const updateTestimonialApi = (id: string, payload: TestimonialPayload) =>
+  axiosInstance.put<ApiResponse<Testimonial>>(`/admin/testimonials/${id}`, payload);
+
+export const deleteTestimonialApi = (id: string) =>
+  axiosInstance.delete<ApiResponse<Testimonial>>(`/admin/testimonials/${id}`);
