@@ -253,7 +253,7 @@ export default function FaqsPage() {
       </section>
 
       <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="w-[min(92vw,680px)] max-w-[680px] rounded-[28px] border-0 bg-white px-7 py-7 text-[#083f32] shadow-[0_18px_60px_rgba(0,0,0,0.18)] ring-0">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] w-[min(92vw,680px)] max-w-[680px] overflow-y-auto rounded-[28px] border-0 bg-white px-5 py-6 text-[#083f32] shadow-[0_18px_60px_rgba(0,0,0,0.18)] ring-0 sm:max-w-[680px] sm:px-7 sm:py-7">
           <DialogHeader>
             <DialogTitle className="text-[24px] font-semibold text-[#083f32]">
               {editingFaq ? "Update FAQ" : "Add FAQ"}
@@ -271,7 +271,7 @@ export default function FaqsPage() {
                   setForm((current) => ({ ...current, question: event.target.value }))
                 }
                 className="h-[52px] rounded-[12px] border-[#dfe7ef] text-[16px] text-[#083f32]"
-                placeholder="What is Ematony?"
+                placeholder="How does Ajo Family work?"
               />
             </div>
 
